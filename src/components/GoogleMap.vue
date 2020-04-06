@@ -91,36 +91,36 @@ export default {
   data () {
     return {
       service: null,
-      isSearching: false,
+      isSearching: false, // check if user is searching restaurants 
       loader: false,
-      minRating: 0,
-      active: 0,
-      add: false,
       tmpLoader: true,
+      minRating: 0,
+      active: 0, // take the place.id whitch the user clicked on
+      add: false, // allow to show the new resto form
       markers: [],
       places: [],
-      radius: 5,
-      addLocation: {
+      radius: 5, // define the distance search
+      addLocation: { // default new resto location
         lat: 12,
         lng: 12
       },
-      center: {
+      center: { // default user location
         lat : 48.866667,
         lng: 2.333333
       },
-      infoWindowPos: {
+      infoWindowPos: { // array for info window markers
         lat: 0,
         lng: 0
       },
-      infoOptions: {
+      infoOptions: { // options for info window
         pixelOffset: {
           width: 0,
           height: -35
         }
       },
-      infoContent: '',
-      currentMidx: -1,
-      infoWinOpen: false,
+      infoContent: '', // content for info window
+      currentMidx: -1, // take the index marker whitch the user clicked on
+      infoWinOpen: false, // if true show the info window
     }
   },
   mounted () {
@@ -139,7 +139,6 @@ export default {
     show (place) { return ((this.active === place.id || this.active === 0) && (place.rating + 0.9 >= this.minRating || this.active === place.id)) ? true : false },
 
     toggleInfoWindow (marker, idx) {
-      console.log('marker', marker)
       if (this.markers[idx].name !== 'Votre position') {
         this.infoWindowPos = marker.position
         this.infoContent = this.getInfoWindowContent(marker)
@@ -275,7 +274,6 @@ export default {
         vicinity: result.vicinity,
         id: result.id
       })
-      console.log(result)
     },
 
     
