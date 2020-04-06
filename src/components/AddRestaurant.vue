@@ -12,7 +12,7 @@
            <div v-if="showWarrning" class="ui negative message">
             <i class="close icon" @click.prevent="closeWarrning"></i>
             <div class="header">
-              Please enter your review 
+              Please enter the restaurant name
             </div>
           </div>
           <div class="field">
