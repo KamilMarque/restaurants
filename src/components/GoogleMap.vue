@@ -1,80 +1,53 @@
 <template>
-  <div class="" id="map">
-    <div class="container">
-      <div id="infos">
-        <div class="six wide column">
-          <!-- search parameters -->
-          <form class="ui segment large form">
-            <div class="ui segment">
-              <div class="field">
-                <div class="ui form">
-                  <select class="ui search dropdown" v-model="radius">
-                    <option disabled value="">Distance...</option>
-                    <option value="5">5 KM</option>
-                    <option value="10">10 KM</option>
-                    <option value="15">15 KM</option>
-                    <option value="20">20 KM</option>
-                  </select>
-                </div>
-              </div>
-              <div class="field">
-                <div class="ui right icon input large">
-                  <star-rating style="margin-right: 45px" v-bind:star-size="25" v-model="minRating" v-bind:show-rating="false"></star-rating>
-                  <div class="ui buttons">
-                    <button class="ui button" @click.prevent="resetParams">Reset</button>
-                    <div class="or"></div>
-                    <button class="ui button secondary" @click.prevent="getPlaces">Search</button>
-                  </div>
-                  <i class="large location arrow link icon" @click.prevent="panTo(center)"></i>
-                </div>
-              </div>
-            </div>
-          </form>
+  <div id="container" class="container">
+    <sweet-modal ref="modal" icon="warning">Attention la géolocalisation est désactivée, veuillez l'activer dans les paramètres de votre navigateur.</sweet-modal>
+    <transition name='fade'>
+    <nav id="informations" v-show="menu" v-if="google">
+      <section id="searchForm">
+        <select id="radiusSearch" class="ui search dropdown" v-model="radius">
+          <option disabled value="">Distance...</option>
+          <option value="5">5 KM</option>
+          <option value="10">10 KM</option>
+          <option value="15">15 KM</option>
+          <option value="20">20 KM</option>
+        </select>
+        <star-rating id="starSearch" v-bind:star-size="25" v-model="minRating" v-bind:show-rating="false"></star-rating>
+        <div id="buttonsSearch">
+          <button class="ui button" @click.prevent="resetParams">Reset</button>
+          <button class="ui button secondary" @click.prevent="getPlaces">Rechercher</button>
         </div>
+        <i class="large location angle left icon" id="hideMenuButton" @click.prevent="hideMenu()"></i>
+      </section>
 
-        <div id="placesList" class="ten wide column segment ui">
-          <!-- new restaurent tamplete -->
-          <New-Restaurant ref="newRes" :google='google' :markers='markers' :places='places' :location='addLocation' :add="add === true"  @close="close"></New-Restaurant>
-          <div>
-            <!-- list of places -->
-            <section class="ui divided items" v-for="(place) in places" :key="place.id">
-                <div :id="'place-' + place.id" class="item" v-if="show(place)" ref="target" @click.prevent="showReviews(place)">
-                <div>
-                  <button v-if="active === place.id" class="ui labeled icon button secondary">
-                    <i class="left chevron icon"></i>
-                    back
-                  </button>
+      <!-- new restaurent tamplete -->
+      <New-Restaurant ref="newRes" v-if="google" :google='google' :places='places' :location='addLocation' :add="add === true"  @close="close"></New-Restaurant>
 
-                  <div class="profilPictureRestaurant" v-bind:style="{ 'background-image': 'url(' + place.url + ')' }"></div>
-                  <div class="restaurantName">{{place.name}}</div>
-                  <div>
-                    <star-rating style="display: inline-block; vertical-align: middle" v-bind:star-size="15" v-bind:read-only="true" v-bind:rating="place.rating" v-bind:show-rating="false"></star-rating>
-                    <p style="display: inline">({{place.user_ratings_total}})</p>
-                  </div>
-                  <div class="vicinity">{{place.vicinity}}</div>
-                </div>
-              </div>
-              <list-item :selected-place='place' :markers="markers" :expanded="active === place.id" @scrollTo="scrollTo(place)"></list-item>
-            </section>
-            <!-- Loader during searching -->
-            <div v-if="showLoader" class="ui segment">
-              <div class="ui active inverted dimmer">
-                <div class="ui text loader">Loading</div>
-              </div>
+      <perfect-scrollbar id="listItems">
+        <div id="placeItem" class="ui divided items" v-for="(place) in places" :key="place.id">
+          <button v-if="active === place.id" class="ui labeled icon button secondary" @click.prevent="closeActivePlace"><i class="left chevron icon"></i>back</button>
+          <div :id="'place-' + place.id" v-if="show(place)" ref="target" @click="showReviews(place)">
+            <div id="listItemPicture" v-bind:style="{ 'background-image': 'url(' + place.url + ')' }"></div>
+            <div id="listItemName" class="restaurantName">{{place.name}}</div>
+            <div>
+              <star-rating id="listItemRating" v-bind:star-size="15" v-bind:read-only="true" v-bind:rating="place.rating" v-bind:show-rating="false"></star-rating>
+              <p id="listItemRatingTotal">({{place.user_ratings_total}})</p>
             </div>
+            <div id="vicinity">{{place.vicinity}}</div>
           </div>
+          <list-item :selected-place='place' :expanded="active === place.id" @scrollTo="scrollTo(place)"></list-item>
         </div>
+      </perfect-scrollbar>
+    </nav>
+    <load-informations v-else> </load-informations>
+    </transition>
+    <i v-if="!menu" class="large location angle right icon" id="showMenuButtom" @click.prevent="showMenu()"></i>
+    <i class="large location arrow link icon" id="locateMe" @click.prevent="panTo(center)"></i>
 
-      </div>
-      <div id="mapContainer">
-        <GmapMap  id="map" ref="mapRef" :center="{lat: this.center.lat, lng: this.center.lng}" :zoom="17"  map-type-id="hybrid" @click="addRestaurant">
-        <gmap-marker class="marker" :key="index" v-for="(m, index) in markersFilter" :icon="m.icon" :position="m.position" @click="toggleInfoWindow(m, index)"></gmap-marker>
-        <gmap-info-window :options="infoOptions" :position="infoWindowPos" :opened="infoWinOpen" @closeclick="infoWinOpen=false, active=0">
-          <div v-html="infoContent"></div>
-        </gmap-info-window>
+    <section id="mmap">
+      <GmapMap  id="map" ref="mapRef" :center="{lat: this.center.lat, lng: this.center.lng}" :zoom="17"  map-type-id="roadmap" @click="addRestaurant">
+        <gmap-marker class="marker" :key="index" v-for="(m, index) in markersFilter" :icon="m.icon" :position="m.position" :zIndex='m.zIndex' @click="showReviews(m)"></gmap-marker>
       </GmapMap>
-      </div>
-    </div>
+    </section>
   </div>
 </template>
 
@@ -82,22 +55,22 @@
 import { gmapApi } from 'vue2-google-maps'
 import axios from 'axios'
 import ListItem from './ListItem'
+import LoadInformations from './LoadInformations.vue'
 import StarRating from 'vue-star-rating'
 import NewRestaurant from './AddRestaurant'
 
+
 export default {
   name: 'GoogleMap',
-  components: { ListItem, StarRating, NewRestaurant},
+  components: { ListItem, NewRestaurant, StarRating, LoadInformations},
   data () {
     return {
       service: null,
       isSearching: false, // check if user is searching restaurants 
-      loader: false,
-      tmpLoader: true,
       minRating: 0,
+      menu: true,
       active: 0, // take the place.id whitch the user clicked on
       add: false, // allow to show the new resto form
-      markers: [],
       places: [],
       radius: 5, // define the distance search
       addLocation: { // default new resto location
@@ -108,84 +81,92 @@ export default {
         lat : 48.866667,
         lng: 2.333333
       },
-      infoWindowPos: { // array for info window markers
-        lat: 0,
-        lng: 0
-      },
-      infoOptions: { // options for info window
-        pixelOffset: {
-          width: 0,
-          height: -35
-        }
-      },
-      infoContent: '', // content for info window
-      currentMidx: -1, // take the index marker whitch the user clicked on
-      infoWinOpen: false, // if true show the info window
     }
   },
   mounted () {
     this.geolocate()
+    // set the service with goolge places api
     this.$refs.mapRef.$mapPromise.then((map) => { this.service = new this.google.maps.places.PlacesService(map) })
   },
 
   computed: {
+    // store the google map import
     google: gmapApi,
-    markersFilter () { return this.minRating > 0 ? this.markers.filter(i => i.rating + 0.9 >= this.minRating || i.name === 'Votre position') : this.markers },
-    showLoader () { return ((this.loader === true &&  this.tmpLoader === true) ? true : false) }
+    markersFilter () { return this.minRating > 0 ? this.places.filter(i => i.rating + 0.9 >= this.minRating || i.name === 'Votre position') : this.places },
   },
 
   methods: {
+    // left menu
+    hideMenu () {
+     document.getElementById('container').classList.remove('container')
+     document.getElementById('container').classList.add('container2')
+      this.menu = false
+    },
+    showMenu () {
+      document.getElementById('container').classList.remove('container2')
+      document.getElementById('container').classList.add('container')
+      this.menu = true
+    },
+
     // should I show restaurant in the list
     show (place) { return ((this.active === place.id || this.active === 0) && (place.rating + 0.9 >= this.minRating || this.active === place.id)) ? true : false },
 
-    toggleInfoWindow (marker, idx) {
-      if (this.markers[idx].name !== 'Votre position') {
-        this.infoWindowPos = marker.position
-        this.infoContent = this.getInfoWindowContent(marker)
-        this.infoWinOpen = true
-        this.currentMidx = idx
-        this.panTo(marker.position)
-        this.active = marker.id
-        this.add = false
-      }
-    },
+    resetParams () { this.minRating = 0; this.radius = 5 },
 
-    getInfoWindowContent (marker) {
-      return (
-        `<div class="">
-          <div class="">
-            <div>${marker.name}</div>
-            <div class="">${marker.vicinity}</div> 
-          </div>
-        </div>`)
-    },
 
-    resetParams () {
-      this.minRating = 0
-      this.radius = 5
-    },
-
+    // géolocation functions
     geolocate () {
-      navigator.geolocation.getCurrentPosition(position => {
-        this.center = {
-          lat: parseFloat(position.coords.latitude),
-          lng: parseFloat(position.coords.longitude)
-        }
-        this.depart = this.center
-        this.markers.push({ position: this.center, name: 'Votre position', icon: {url: "https://maps.google.com/mapfiles/kml/paddle/blu-circle.png"} })
-      })     
+      navigator.geolocation.getCurrentPosition(this.succesGeolocate, this.errorGeolocate);
     },
 
-    panTo (place) {
-      this.$refs.mapRef.$mapPromise.then((map) => {
-        map.panTo(place)
+    succesGeolocate (pos) {
+      this.center = { lat: parseFloat(pos.coords.latitude), lng: parseFloat(pos.coords.longitude) }
+      this.pushCurrentPlaceMarker() 
+    },
+
+    errorGeolocate () {
+      this.$refs.modal.open();
+      this.pushCurrentPlaceMarker()
+    },
+
+    pushCurrentPlaceMarker () {
+      this.places.push({
+        position: this.center,
+        name: 'Votre position',
+        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/blu-blank.png", scaledSize: new this.google.maps.Size(50, 50)},
+        zIndex: 1
       })
     },
 
+    // zoom in on the place
+    panTo (place) {
+      this.$refs.mapRef.$mapPromise.then((map) => {
+        map.panTo(place)
+        map.setZoom(15)
+      })
+    },
+
+    activePin (place) {
+      let tmp = place.icon.url.split('-')
+      place.icon = {url : tmp[0] + "-circle.png", scaledSize: new this.google.maps.Size(75, 75)}
+      place.zIndex = 2
+      this.active = place.id
+    },
+
+    closeActivePlace () {
+      let place =  this.places.filter(place => place.id === this.active)[0]
+      let tmp = place.icon.url.split('-')
+      place.icon = {url : tmp[0] + "-blank.png", scaledSize: new this.google.maps.Size(50, 50)}
+      place.zIndex = 1
+      this.active = 0
+    },
+
     showReviews (place) {
-      this.panTo(place.position)
-      this.active = this.active === place.id ? 0 : place.id
-      this.tmpLoader = this.tmpLoader === true ? false : true
+      if (place.name != 'Votre position') {
+        if (this.active != 0) {this.closeActivePlace()}
+        this.activePin(place)
+        this.panTo(place.position)
+      }
     },
 
     checkRating (result) { return !result.rating ? 0 : result.rating },
@@ -214,9 +195,8 @@ export default {
           type: ['restaurant'],
         }
         this.active = 0
-        this.isSearching = this.loader = true
+        this.isSearching = true
         this.add = false
-        this.clearMarkers()
         this.clearPlaces()
         this.service.nearbySearch(request, async (results, status) => {
           if (status === this.google.maps.places.PlacesServiceStatus.OK) {
@@ -224,28 +204,18 @@ export default {
               results[i].reviews = []
               let res = await this.getReviews(results[i])
               results[i].reviews = res.data.result.reviews ? res.data.result.reviews : []
-              this.pushMarker(results[i])
               this.pushPlace(results[i])
+              
             }
-            this.loader = this.isSearching = false
+            this.isSearching = false
           }
         })
       }
     },
 
-    clearMarkers () {
-      for (let i = 0; i < this.markers.length; i++) {
-        if (this.markers[i].fromJson != true) {
-          this.markers.splice(i, 1)
-          i--
-        }
-      }
-      this.markers.push({ position: this.center, name: 'Votre position', icon: {url: "https://maps.google.com/mapfiles/kml/paddle/blu-circle.png"} })
-    },
-
     clearPlaces () {
       for (let i = 0; i < this.places.length; i++) {
-        if (this.places[i].fromJson != true) {
+        if (this.places[i].fromJson != true && this.places[i].name  != 'Votre position') {
           this.places.splice(i, 1)
           i--
         }
@@ -261,100 +231,166 @@ export default {
         user_ratings_total : this.getRatingTotal(result),
         vicinity: result.vicinity,
         id: result.id,
+        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/grn-blank.png", scaledSize: new this.google.maps.Size(50, 50)},
+        zIndex: 1,
         reviews: result.reviews
       })
     },
-
-    pushMarker (result) {
-      this.markers.push({
-        position: result.geometry.location,
-        name: result.name,
-        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/grn-circle.png"},
-        rating: result.rating,
-        vicinity: result.vicinity,
-        id: result.id
-      })
-    },
-
     
     addRestaurant (e) { // add a new restaurant information in the form, triggered by the clic event
-      if (this.places.length > 0) {
-        this.addLocation.lat = e.latLng.lat()
-        this.addLocation.lng = e.latLng.lng()
-        this.add = true
-        this.active = -1
-        this.tmpLoader = false
-      }
+      if (this.active != 0) {this.closeActivePlace()}
+      this.addLocation.lat = e.latLng.lat()
+      this.addLocation.lng = e.latLng.lng()
+      this.add = true
+      this.showMenu()
     },
 
     // triggered by emmit from child
     scrollTo (place) { // scroll to selected Element
       setTimeout(() => {
-        document.getElementById("placesList").scroll({
-        top: !document.getElementById("place-" + place.id) ? 0 : document.getElementById("place-" + place.id).offsetTop - 35,
+        document.getElementById("listItems").scroll({
+        top: !document.getElementById("place-" + place.id) ? 0 : document.getElementById("place-" + place.id).offsetTop - 55,
         left: 0,
-        behavior: "smooth"
         })
       }, 100);
     },
 
     close () { // close the form
       this.add = false
-      this.active = 0
-      this.tmpLoader = true
     }
   }
 }
 </script>
 
 <style>
+@font-face {
+  font-family: 'Pacifico';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Pacifico Regular'), local('Pacifico-Regular'), url(https://fonts.gstatic.com/s/pacifico/v12/FwZY7-Qmy14u9lezJ-6H6MmBp0u-.woff2) format('woff2');
+  font-display: swap;
+}
 
-html, body, #app {
+html, #app {
   height: 100%;
   margin: 0;
   font-family: 'Oxygen', sans-serif;
 }
 
-.marker {
-  height: 10px;
-  width: 10px;
-  background: yellow;
-}
-
 .container {
   display: grid;
-  grid-template-columns: 1fr 3fr;
-  grid-template-rows: 4fr;
+  width: 100%;
   height: 100%;
+  grid-template-columns: 470px auto;
 }
 
-#info {
-  grid-column: 1; grid-row: 1;
+.container2 {
+  display: grid;
+  width: 100%;
+  height: 100%;
+  grid-template-columns: 100%;
 }
 
-#mapContainer {
-  grid-column: 2; grid-row: 1;
+#mmap {
+  background-color: gray;
 }
 
-.postReview {
-  margin-left: 40px;
-  display: inherit;
-  margin-bottom: 20px;
+#searchForm {
+  box-shadow: 0px 10px 25px grey;
+  height: 15%;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-template-rows: repeat(2, 1fr);
 }
 
-#postButton {
-  display: inherit;
-  margin-top: 20px;
+#radiusSearch {
+  margin: 1em;
+  grid-row: 1;
+  grid-column: 1 / 5;
+}
+
+#starSearch {
+  margin: 1em;
+  grid-row: 2;
+  grid-column: 1;
+}
+
+#buttonsSearch {
+  margin: 1em;
+  grid-row: 2;
+  grid-column: 2 / 5;
+}
+
+#listItems {
+    position: absolute;
+    max-width: 470px;
+    min-width: 470px;
+    height: 85%;
+}
+
+#placeItem {
+    margin: 15px;
+    grid-row: 1;
+    grid-column: 1 / 4;
+}
+
+#listItemPicture {
+    background-color: silver;
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    height: 200px;
+    min-width: 100%;
+}
+
+#listItemName {
+  margin: 10px 0px 10px 10px;
+  color: black;
+  font-size: 1.5em;
+  font-weight: 500;
+}
+
+#listItemRating {
+  margin-left: 10px;
+  display: inline-block;
+  vertical-align: middle
+}
+
+#listItemRatingTotal {
+  display: inline;
+}
+
+#vicinity {
+  margin-left: 10px;
 }
 
 #map {
   height: 100%;
 }
 
-#placesList {
-  overflow:scroll;
-  max-height: 400px;
-  min-height: 82%;
+#hideMenuButton {
+  position: relative;
+  background-color: white;
+  line-height: 40px;
+  height: 40px;
+  left: 470px;
+  top: -60px;
+  z-index: 1;
+}
+
+#showMenuButtom {
+  position: absolute;
+  background-color: white;
+  top: 60px;
+  line-height: 40px;
+  height: 40px;
+  z-index: 1;
+}
+
+.postReview {
+  margin-left: 40px;
+  display: inherit;
+  margin-bottom: 20px;
 }
 
 #review {
@@ -365,36 +401,69 @@ html, body, #app {
   margin-right: 0;
 }
 
-.profilPictureRestaurant {
-  background-size: cover;
-  background-repeat: no-repeat;
-  background-position: center;
-  height: 200px;
-  width: 400px;
-  min-width: 100%;
-  min-height: 50px;
-  max-width: 100%;
-  margin-top: 20px;
+.sweet-modal .sweet-box-actions .sweet-action-close:hover {
+  background: #1b1c1d !important;
 }
 
-.vicinity {
-  margin-top: 10px;
+.button {
+  margin-top: 10px !important;
+  margin-bottom: 10px !important;
 }
 
-.content {
-  display: inline;
+#locateMe {
+  position: fixed;
+  background-color: white;
+  right: 5px;
+  top: 8%;
+  height: 50px;
+  line-height: 50px;
+  width: 50px;
+  border-radius: 50px;
+  z-index: 1;
 }
 
-.restaurantName {
-  margin-top: 10px;
-  margin-bottom: 10px;
-  color: black;
-  font-size: 1.5em;
-  font-weight: 500;
+@media screen and (max-width: 600px) {
+  #listItems {
+    max-width: 300px;
+    min-width: 300px;
+    height: 85%;
+  }
+  .container {
+    grid-template-columns: 300px auto;
+  }
+
+  #radiusSearch {
+    height: 30px;
+    margin-top: 5px;
+    margin-bottom: 0px;
+  }
+
+  #hideMenuButton {
+    left: 300px;
+  }
+
+  #searchForm {
+    height: 15%;
+    grid-template-rows: repeat(3, 1fr);
+  }
+
+  #hideMenuButton {
+  left: 150px;
+  top: 10px;
+  z-index: 1;
 }
 
-.backButton {
-  margin-bottom: 10px;
+  #starSearch {
+    margin: 0px 0px 0px 20px;
+  grid-row: 2;
+  grid-column: 1 / 3;
 }
 
+#buttonsSearch {
+  margin: 0px 0px 0px 20px;
+  grid-row: 3;
+  grid-column: 1 / 4;
+}
+
+}
 </style>

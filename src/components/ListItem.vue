@@ -1,11 +1,11 @@
 <template>
   <div class="listItem" :class='{isExpanded:expanded}'>
-    <div class="" v-if="expanded">
-      <div class="container">
-        <div class="info">
+    <div v-if="expanded">
+      <div class="reviewContainer">
+        <div class="infoPicture">
           <img class="profilPicture" src="https://fr.vuejs.org/images/logo.png" alt="Profile photo">
         </div>
-        <div class="mapContainer">
+        <div class="userContainer">
           <div class="autorName">VueUser</div>
           <star-rating v-bind:star-size="15" v-bind:show-rating="false" @rating-selected="setRating" v-bind:rating=this.rating></star-rating>
         </div>
@@ -19,11 +19,11 @@
         <div v-if="showWarrning" class="ui negative message">
           <i class="close icon" @click.prevent="closeWarrning"></i>
           <div class="header">
-            Please give a rating and a review 
+            Veillez à attribuer une note.
           </div>
         </div>
         <div class="ui animated button secondary" id="postButton" tabindex="0" @click.prevent="postReview(selectedPlace)">
-          <div class="visible content">Add Comment</div>
+          <div class="visible content">Ajouter un commentaire</div>
           <div class="hidden content">
             <i class="paper plane icon"></i>
           </div>
@@ -60,7 +60,6 @@ export default {
   props: {
     expanded: Boolean,
     selectedPlace: Object,
-    markers: Array
   },
 
   components: { StarRating },
@@ -98,7 +97,6 @@ export default {
   
     calcRating (place) { // calc rating with new review
       place.rating = ((place.user_ratings_total - 1) * place.rating + this.rating) / place.user_ratings_total
-      this.markers.find(marker => marker.id === place.id).rating = place.rating
       this.rating = null
     }
   }
@@ -106,6 +104,25 @@ export default {
 </script>
 
 <style>
+.reviewContainer {
+  display: grid;
+  grid-template-columns: 1fr 3fr;
+  grid-template-rows: 4fr;
+  height: 100%;
+}
+
+#newReview {
+  max-width: 80%;
+}
+
+#mapContainer {
+  grid-column: 2; grid-row: 1;
+}
+#infoPicture {
+  grid-column: 1; grid-row: 1;
+}
+
+
 .listItem {
   margin-top: 20px;
 }
@@ -131,7 +148,7 @@ export default {
   width: 40px;
   min-width: 40px;
   min-height: 40px;
-  margin-left: 20px;
+  margin-left: 40px;
 }
 
 .autorName {

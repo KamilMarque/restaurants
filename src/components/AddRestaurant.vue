@@ -1,29 +1,30 @@
 <template>
   <section class="" :class='{isAdd:add}'>
-    <div v-if="add" class="addNewRestaurant six wide column" >
-      <div class="ui segment large form">
-        <form action="">                
-          <label for="lat">Latitude :</label>
-          <input id="lat" type="text" v-model="this.location.lat" disabled>
-          <label for="lng">Longitude</label>
-          <input id="lng" type="text" v-model="this.location.lng" disabled>
-          <label for="name">Nom du restaurant</label>
-          <input id="name" type="text" required v-model="name">
-           <div v-if="showWarrning" class="ui negative message">
-            <i class="close icon" @click.prevent="closeWarrning"></i>
-            <div class="header">
-              Please enter the restaurant name
+      <sweet-modal ref="modal" icon="error">Il existe déjà un restaurant à cet endroit</sweet-modal>
+      <sweet-modal ref="succes" icon="success">Restaurant ajouté !</sweet-modal>
+      <sweet-modal ref="newRestaurant" @close="close('html')">
+        <div class="ui segment large form">
+          <form action="">                
+            <label for="lat">Latitude :</label>
+            <input id="lat" type="text" v-model="this.location.lat" disabled>
+            <label for="lng">Longitude</label>
+            <input id="lng" type="text" v-model="this.location.lng" disabled>
+            <label for="name">Nom du restaurant</label>
+            <input id="name" type="text" required v-model="name">
+            <div v-if="showWarrning" class="ui negative message">
+              <i class="close icon" @click.prevent="closeWarrning"></i>
+              <div class="header">
+                Nom du restaurant obligatoire
+              </div>
             </div>
-          </div>
-          <div class="field">
-            <div class="ui right icon input large">
-            <button type="summit" class="add ui button secondary" @click.prevent="addRestaurant" style="margin-top: 20px">Add Restaurants</button>
-            <i class="window close outline link icon large" @click="close" style="height: 70px"></i>
-            </div> 
-          </div>
-        </form>
-      </div>
-    </div>
+            <div class="field">
+              <div class="ui right icon input large">
+                <button type="summit" class="add ui button secondary" @click.prevent="addRestaurant" style="margin-top: 20px">Ajouter le restaurant</button>
+              </div> 
+            </div>
+          </form>
+        </div>
+      </sweet-modal>
   </section>
 </template>
 
@@ -36,7 +37,6 @@ export default {
     add: Boolean,
     location: Object,
     places: Array,
-    markers: Array,
     google: Object
   },
 
@@ -49,6 +49,12 @@ export default {
         lng: this.location.lng
       },
     }
+  },
+
+  watch: {
+    async add () {
+      if (this.add) { this.$refs.newRestaurant.open() }
+    },
   },
 
   mounted () {
@@ -77,22 +83,11 @@ export default {
           url: places[i].url,
           id: places[i].place_id,
           vicinity: places[i].vicinity,
+          icon: {url: "https://maps.google.com/mapfiles/kml/paddle/red-blank.png", scaledSize: new this.google.maps.Size(50, 50)},
+          zIndex: 1,
           fromJson: true
         })
-        this.addMarkerFromJson(places[i])
       }
-    },
-
-    addMarkerFromJson (place) {
-      this.markers.push({
-        position: place.position,
-        name: place.name,
-        vicinity: place.vicinity,
-        id: place.place_id,
-        fromJson: true,
-        rating: place.rating,
-        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/red-circle.png"}
-      })
     },
 
     async addRestaurant () {
@@ -102,43 +97,38 @@ export default {
         let completedInfo = await this.getInfo()
         if (this.checkDuplicate(completedInfo) === undefined) {
           let name = this.name
-          this.places.unshift({
-            name: name,
-            position: this.local,
-            reviews: [],
-            rating: 0,
-            user_ratings_total: 0,
-            url: completedInfo.url,
-            id: completedInfo.place_id,
-            vicinity: completedInfo.formatted_address
-          })
+          this.addPlace(completedInfo, name, this.local)
           this.name = null
-          this.close()
-          this.addMarker(completedInfo, name)
+          this.$refs.succes.open()
         } else {
-          alert ('Duplicated place')
+            this.$refs.modal.open()
         }
+      this.close('js');
       } else {
         this.showWarrning = true
       }
     },
 
-    addMarker (completedInfo, name) {
-      this.local = {...this.location}
-      this.markers.push({
-        position: this.local,
-        icon: { url: 'https://maps.google.com/mapfiles/kml/paddle/orange-circle.png' },
+    addPlace (completedInfo, name, local) {
+      this.places.unshift({
         name: name,
+        position: local,
+        icon: { url: 'https://maps.google.com/mapfiles/kml/paddle/orange-blank.png', scaledSize: new this.google.maps.Size(50, 50) },
+        reviews: [],
         rating: 0,
-        vicinity: completedInfo.formatted_address,
-        id: completedInfo.place_id
+        user_ratings_total: 0,
+        url: completedInfo.url,
+        id: completedInfo.place_id,
+        vicinity: completedInfo.formatted_address
       })
     },
 
-    close () { // close new resto form
-      this.$emit('close')
+    close (from) { // close new resto form
+    if (from != 'html') { this.$refs.newRestaurant.close() }
       this.closeWarrning()
+      this.$emit('close') 
     },
+
     closeWarrning () { this.showWarrning = false }
   }
 }
