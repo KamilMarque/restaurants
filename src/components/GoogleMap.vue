@@ -430,7 +430,7 @@ html, #app {
   #listItems {
     max-width: 300px;
     min-width: 300px;
-    height: 85%;
+    height: 80%;
   }
   .container {
     grid-template-columns: 300px auto;
@@ -447,7 +447,7 @@ html, #app {
   }
 
   #searchForm {
-    height: 15%;
+    height: 20%;
     grid-template-rows: repeat(3, 1fr);
   }
 
