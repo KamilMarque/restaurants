@@ -405,6 +405,10 @@ html, #app {
   background: #1b1c1d !important;
 }
 
+.sweet-modal-overlay {
+  background: none !important;
+}
+
 .button {
   margin-top: 10px !important;
   margin-bottom: 10px !important;
