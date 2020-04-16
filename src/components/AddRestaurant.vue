@@ -134,13 +134,3 @@ export default {
 }
 
 </script>
-
-<style>
-.addNewRestaurant {
-    width: auto;
-    top: 180px;
-    left: 0px;
-    margin-bottom: 20px;
-}
-
-</style>
