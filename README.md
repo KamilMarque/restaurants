@@ -1,6 +1,6 @@
 # Lancez votre propre site d'avis de restaurants
 
-![GitHub Logo](/public/preview.PNG)
+![GitHub Logo](/public/preview.png)
 
 
 ## Etape 1 : la carte des restaurants
