@@ -135,7 +135,7 @@ export default {
       this.places.push({
         position: this.center,
         name: 'Votre position',
-        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/blu-blank.png", scaledSize: new this.google.maps.Size(50, 50)},
+        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/blu-blank.png"},
         zIndex: 1
       })
     },
@@ -217,7 +217,7 @@ export default {
 
     clearPlaces () {
       for (let i = 0; i < this.places.length; i++) {
-        if (this.places[i].fromJson != true && this.places[i].name  != 'Votre position') {
+        if (this.places[i].notDeletable != true && this.places[i].name  != 'Votre position') {
           this.places.splice(i, 1)
           i--
         }

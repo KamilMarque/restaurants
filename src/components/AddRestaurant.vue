@@ -85,7 +85,7 @@ export default {
           vicinity: places[i].vicinity,
           icon: {url: "https://maps.google.com/mapfiles/kml/paddle/red-blank.png", scaledSize: new this.google.maps.Size(50, 50)},
           zIndex: 1,
-          deletable: false
+          notDeletable: true
         })
       }
     },
@@ -120,7 +120,7 @@ export default {
         url: completedInfo.url,
         id: completedInfo.place_id,
         vicinity: completedInfo.formatted_address,
-        deletable: false
+        notDeletable: true
       })
     },
 
