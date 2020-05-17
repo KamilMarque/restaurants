@@ -1,19 +1,19 @@
 <template>
-  <div class="listItem" :class='{isExpanded:expanded}'>
+  <div class="list-item" :class='{isExpanded:expanded}'>
     <div v-if="expanded">
-      <div class="reviewContainer">
-        <div class="infoPicture">
-          <img class="profilPicture" src="https://fr.vuejs.org/images/logo.png" alt="Profile photo">
+      <div class="review-container">
+        <div class="info-picture">
+          <img class="profil-picture" src="https://fr.vuejs.org/images/logo.png" alt="Profile photo">
         </div>
         <div class="userContainer">
-          <div class="autorName">VueUser</div>
+          <div class="autor-name">VueUser</div>
           <star-rating v-bind:star-size="15" v-bind:show-rating="false" @rating-selected="setRating" v-bind:rating=this.rating></star-rating>
         </div>
       </div>
-      <div class="postReview">
+      <div class="post-review">
         <div class="ui form">
           <div class="field">
-            <textarea id="newReview" ref="newReview"></textarea>
+            <textarea id="new-review" ref="newReview"></textarea>
           </div>
         </div>
         <div v-if="showWarrning" class="ui negative message">
@@ -30,14 +30,14 @@
         </div>
       </div>
       <div v-for="(review, index) in selectedPlace.reviews" :key="index">
-        <div class="reviewContainer">
-          <div class="autorPicture">
-            <img class="profilPicture" :src="review.profile_photo_url" alt="Profile photo">
+        <div class="review-container">
+          <div class="autor-picture">
+            <img class="profil-picture" :src="review.profile_photo_url" alt="Profile photo">
           </div>
-          <div class="infoAutor">
-            <div class="autorName">{{review.author_name}}</div>
+          <div class="info-autor">
+            <div class="autor-name">{{review.author_name}}</div>
             <star-rating v-bind:star-size="15" v-bind:read-only="true" v-bind:rating="review.rating" v-bind:show-rating="false"></star-rating>
-            <div class="relativeTime">{{review.relative_time_description}}</div>
+            <div class="relative-time">{{review.relative_time_description}}</div>
           </div>
         </div>
         <div class="review">{{review.text}}</div><br>
@@ -104,46 +104,36 @@ export default {
 </script>
 
 <style>
-.reviewContainer {
-  display: grid;
-  grid-template-columns: 1fr 3fr;
-  grid-template-rows: 4fr;
-  height: 100%;
-}
-
-#newReview {
+#new-review {
   max-width: 80%;
 }
 
-#mapContainer {
-  grid-column: 2; grid-row: 1;
-}
-#infoPicture {
+#info-picture {
   grid-column: 1; grid-row: 1;
 }
 
 
-.listItem {
+.list-item {
   margin-top: 20px;
 }
 
-.reviewContainer {
+.review-container {
   display: grid;
   grid-template-columns: 1fr 4fr;
   grid-template-rows: 1fr;
   height: 100%;
 }
 
-.autorPicture {
+.autor-picture {
   grid-column: 1; grid-row: 1;
 }
 
-.infoAutor {
+.info-autor {
   margin-left: 5px;
   grid-column: 2; grid-row: 1;
 }
 
-.profilPicture {
+.profil-picture {
   height: 40px;
   width: 40px;
   min-width: 40px;
@@ -151,12 +141,14 @@ export default {
   margin-left: 40px;
 }
 
-.autorName {
+.autor-name {
   font-weight: bold;
 }
 
-.autorRating {
-  color: gray;
+.post-review {
+  margin-left: 40px;
+  display: inherit;
+  margin-bottom: 20px;
 }
 
 .review {
@@ -164,7 +156,7 @@ export default {
   margin-top: 0;
 }
 
-.relativeTime {
+.relative-time {
   font-size: 10px;
   color: dimgray;
   margin-bottom: 20px;

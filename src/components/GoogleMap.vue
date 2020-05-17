@@ -132,7 +132,7 @@ export default {
       this.places.push({
         position: this.center,
         name: 'Votre position',
-        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/blu-blank.png"},
+        icon: {url: "https://maps.google.com/mapfiles/kml/paddle/blu-blank.png" },
         zIndex: 0
       })
     },
