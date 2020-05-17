@@ -85,7 +85,7 @@ export default {
           vicinity: places[i].vicinity,
           icon: {url: "https://maps.google.com/mapfiles/kml/paddle/red-blank.png", scaledSize: new this.google.maps.Size(50, 50)},
           zIndex: 1,
-          fromJson: true
+          deletable: false
         })
       }
     },
@@ -119,11 +119,12 @@ export default {
         user_ratings_total: 0,
         url: completedInfo.url,
         id: completedInfo.place_id,
-        vicinity: completedInfo.formatted_address
+        vicinity: completedInfo.formatted_address,
+        deletable: false
       })
     },
 
-    close (from) { // close new resto form
+    close (from) {
     if (from != 'html') { this.$refs.newRestaurant.close() }
       this.closeWarrning()
       this.$emit('close') 
