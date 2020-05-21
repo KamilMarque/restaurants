@@ -173,7 +173,7 @@ export default {
 
     checkRating (result) { return !result.rating ? 0 : result.rating },
     getRatingTotal (result) { return !result.user_ratings_total ? 0 : result.user_ratings_total },
-    getUrlPhotoFromStreetView (location) { return axios.get(`https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${location.lat()},${location.lng()}&heading=70&pitch=0&key=AIzaSyAoyHI-r4PMeidsDSnEKuvr4H_LsmzBO-A`) },
+    getUrlPhotoFromStreetView (location) { return axios.get(`https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${location.lat()},${location.lng()}&heading=70&pitch=0&key=${process.env.VUE_APP_SECRET_KEY}`) },
     
     async getUrlPhoto (result) {
       if (result.photos) { return (result.photos[0].getUrl()) }
@@ -184,7 +184,7 @@ export default {
     },
 
     async getReviews (result) {
-      const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=${result.place_id}&fields=reviews&key=AIzaSyAoyHI-r4PMeidsDSnEKuvr4H_LsmzBO-A`
+      const URL = `https://cors-anywhere.herokuapp.com/https://maps.googleapis.com/maps/api/place/details/json?place_id=${result.place_id}&fields=reviews&key=${process.env.VUE_APP_SECRET_KEY}`
       let res = await axios.get(URL)
       return !res ? [] : res
     },

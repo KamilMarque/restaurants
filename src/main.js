@@ -14,7 +14,7 @@ Vue.use(SuiVue)
 
 Vue.use(VueGoogleMaps, {
   load: {
-    key: 'AIzaSyAoyHI-r4PMeidsDSnEKuvr4H_LsmzBO-A',
+    key: process.env.VUE_APP_SECRET_KEY,
     libraries: 'places'
   }
 })

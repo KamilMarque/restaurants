@@ -58,16 +58,28 @@ export default {
   },
 
   mounted () {
-    let localRestaurants = JSON.parse(JSON.stringify(json))
+    let localRestaurants = this.getStoredRestaurents()
     this.addRestaurantFromJson(localRestaurants)
   },
 
   methods: {
     checkDuplicate(completedInfo) { return this.places.find(places => places.id === completedInfo.place_id) },
 
+    getStoredRestaurents () {
+      let res = ''
+      if (process.env.VUE_APP_JSON_ADDRS === 'true') {
+        res = JSON.parse(JSON.stringify(json))
+      } 
+      // Will allow to get stored data from server
+      // else {
+        // res = await axios.get(process.env.VUE_APP_CUSTOM_JSON_ADDRS)
+      //}
+      return res
+    },
+
     async getInfo() { // get vicinity, id and photo from lat lng 
-      let infos = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${this.local.lat},${this.local.lng}&key=AIzaSyAoyHI-r4PMeidsDSnEKuvr4H_LsmzBO-A`)
-      let photo = await axios.get(`https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${this.local.lat},${this.local.lng}&heading=70&pitch=0&key=AIzaSyAoyHI-r4PMeidsDSnEKuvr4H_LsmzBO-A`)
+      let infos = await axios.get(`https://maps.googleapis.com/maps/api/geocode/json?latlng=${this.local.lat},${this.local.lng}&key=${process.env.VUE_APP_SECRET_KEY}`)
+      let photo = await axios.get(`https://maps.googleapis.com/maps/api/streetview?size=400x400&location=${this.local.lat},${this.local.lng}&heading=70&pitch=0&key=${process.env.VUE_APP_SECRET_KEY}`)
       infos.data.results[0].url = photo.config.url
       return infos.data.results[0]
     },
@@ -125,7 +137,7 @@ export default {
     },
 
     close (from) {
-    if (from != 'html') { this.$refs.newRestaurant.close() }
+      if (from != 'html') { this.$refs.newRestaurant.close() }
       this.closeWarrning()
       this.$emit('close') 
     },
