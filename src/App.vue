@@ -12,12 +12,18 @@
             <option value="15">15 KM</option>
             <option value="20">20 KM</option>
           </select>
-          <star-rating id="starSearch" v-bind:star-size="25" v-model="minRating" v-bind:show-rating="false"></star-rating>
-          <div id="buttonsSearch">
-            <button class="ui button" @click.prevent="resetParams">Reset</button>
-            <button class="ui button secondary" @click.prevent="getPlaces">Rechercher</button>
+          <div id="tests">
+            <div>
+              <star-rating id="starSearch" v-bind:star-size="20" v-model="minRating" :max-rating="maxRating" v-bind:show-rating="false"></star-rating>
+              <star-rating id="starSearch2" v-bind:star-size="20" v-model="maxRating" v-bind:show-rating="false"></star-rating>
+            </div>
+    
+            <div id="buttonsSearch">
+              <button class="ui button" @click.prevent="resetParams">Reset</button>
+              <button class="ui button secondary" @click.prevent="getPlaces">Rechercher</button>
+            </div>
+            <i class="large location angle left icon" id="hide-menu-button" @click.prevent="hideMenu()"></i>
           </div>
-          <i class="large location angle left icon" id="hide-menu-button" @click.prevent="hideMenu()"></i>
         </section>
 
         <!-- new restaurent tamplete -->
@@ -70,6 +76,7 @@ export default {
       service: null,
       isSearching: false, // check if user is searching restaurants 
       minRating: 0,
+      maxRating: 5,
       menu: true,
       active: 0, // take the place.id whitch the user clicked on
       add: false, // allow to show the new resto form
@@ -94,7 +101,9 @@ export default {
   computed: {
     // store the google map import
     google: gmapApi,
-    markersFilter () { return this.minRating > 0 ? this.places.filter(i => i.rating + 0.9 >= this.minRating || i.name === 'Votre position') : this.places },
+    markersFilter () {
+      return this.minRating > 0 ? this.places.filter(i => (i.rating + 0.9 >= this.minRating && i.rating <= this.maxRating) || i.name === 'Votre position') : this.places
+     },
   },
 
   methods: {
@@ -111,9 +120,9 @@ export default {
     },
 
     // should I show restaurant in the list
-    show (place) { return ((this.active === place.id || this.active === 0) && (place.rating + 0.9 >= this.minRating || this.active === place.id)) ? true : false },
+    show (place) { return ((this.active === place.id || this.active === 0) && ((place.rating + 0.9 >= this.minRating && place.rating <= this.maxRating) || this.active === place.id)) ? true : false },
 
-    resetParams () { this.minRating = 0; this.radius = 5 },
+    resetParams () { this.minRating = 0; this.maxRating = 5; this.radius = 5 },
 
 
     // géolocation functions
@@ -303,16 +312,26 @@ html, #app {
   grid-column: 1 / 5;
 }
 
-#starSearch {
+#tests {
+  position: relative;
   margin: 1em;
   grid-row: 2;
-  grid-column: 1;
+  grid-column: 1 / 5;
+}
+
+#starSearch #starSearch2 {
+  margin: 1em;
+  grid-row: 2;
+  grid-column: 1 / 3;
 }
 
 #buttonsSearch {
-  margin: 1em;
+  position: absolute;
+  right: 1em;
+  top: 0;
+  /* margin: 1em;
   grid-row: 2;
-  grid-column: 2 / 5;
+  grid-column: 4 / 5; */
 }
 
 #listItems {
@@ -367,7 +386,7 @@ html, #app {
   background-color: white;
   line-height: 40px;
   height: 40px;
-  left: 470px;
+  left: 455px;
   top: -60px;
   z-index: 1;
 }
@@ -442,12 +461,12 @@ html, #app {
   }
 
   #hide-menu-button {
-  left: 150px;
-  top: 10px;
+  left: 285px;
+  top: -35px;
   z-index: 1;
 }
 
-  #starSearch {
+  #starSearch #starSearch2{
     margin: 0px 0px 0px 20px;
   grid-row: 2;
   grid-column: 1 / 3;
@@ -457,6 +476,9 @@ html, #app {
   margin: 0px 0px 0px 20px;
   grid-row: 3;
   grid-column: 1 / 4;
+  right: auto;
+  left: auto;
+  top: 4em;
 }
 
 }
